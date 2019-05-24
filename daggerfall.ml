@@ -3197,14 +3197,14 @@ let distance_cut margin =
 
 let daggerfall_towns = List.map String.lowercase_ascii daggerfall_towns
 
-let count_words s =
-  let string_fold f acc s =
+let count_words s start stop =
+  let string_fold f acc start stop s =
     let result = ref acc in
-    for i = 0 to String.length s - 1 do
+    for i = start to stop - 1 do
       result := f !result s.[i]
     done;
     !result in
-  string_fold (fun acc -> function ' ' | '-' -> acc + 1 | _ -> acc) 0 s
+  string_fold (fun acc -> function ' ' | '-' -> acc + 1 | _ -> acc) 0 start stop s
                      
 let l = levenshtein2
           (* inserting/deleting separators is cheap *)
@@ -3217,23 +3217,23 @@ let l = levenshtein2
             | ' ', '-' | '-', ' ' -> 2
             | ' ', _ | '-', _ | _, ' ' | _, '-' -> 20
             | _ -> 15)
-          (fun s ->
+          (fun s length ->
             let l = String.length s in
             (* exact prefix is very good *)
-            if l = 0 then 0
-            else match s.[l - 1] with
+            if l = length then 0
+            else match s.[l - length - 1] with
                  | ' ' | '-' -> (* start of word is second best *)
-                    count_words s
+                    count_words s 0 length
                  | _ -> (* otherwise small cost for longer prefixes *)
                     String.length s)
-          (fun s ->
+          (fun s i ->
             (* exact suffix is very good *)
-            if String.length s = 0 then 0
-            else match s.[0] with
+            if String.length s = i then 0
+            else match s.[i] with
                  | ' ' | '-' -> (* end of word is second best *)
-                    count_words s
+                    count_words s i (String.length s)
                  | _ -> (* otherwise small cost for longer suffixes *)
-                    String.length s)
+                    String.length s - i)
 
 let _ =
   best_match l daggerfall_towns "bolton" |> distance_cut 20

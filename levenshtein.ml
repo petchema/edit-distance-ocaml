@@ -31,7 +31,7 @@ let levenshtein2 insert_cost delete_cost replace_cost seek_cost trim_cost =
     if i = l1 then
       if l2 > l1 then
         row |>
-          Array.mapi (fun i cost -> cost + trim_cost (String.sub s2 i (l2 - i))) |>
+          Array.mapi (fun i cost -> cost + trim_cost s2 i) |>
           Array.fold_left min max_int
       else
         row.(l2)
@@ -50,7 +50,7 @@ let levenshtein2 insert_cost delete_cost replace_cost seek_cost trim_cost =
         (* swap rows *)
         aux (i + 1) future_row row
     end in
-  let start_row = Array.init (l2 + 1) (fun j -> seek_cost (String.sub s2 0 j)) in
+  let start_row = Array.init (l2 + 1) (fun j -> seek_cost s2 j) in
   (* just allocate a temp row, content is not used *)
   let temp_row = Array.make (l2 + 1) 0 in
   aux 0 start_row temp_row
