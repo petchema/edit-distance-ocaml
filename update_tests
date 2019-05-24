@@ -1,0 +1,15 @@
+#!/bin/bash
+perl -i.bak -ne '
+# The first time you must insert
+# (* begin suite *)
+# (* end suite *)
+# Where you want generate suite to be inserted
+push @testnames, $1 if /let (test_[^ ]*)\s*test_ctxt\s*=/;
+$insuite = 0 if /\(\*\s*end\s+suite\s*\*\)/i;
+print unless $insuite;
+if(/\(\*\s*begin\s+suite\s*\*\)/i) {
+    $insuite = 1;
+    foreach my $testname (@testnames) {
+        print "  \"$testname\" >:: $testname;\n";
+    }
+}' levenshtein_tests.ml
